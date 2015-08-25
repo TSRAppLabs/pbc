@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -13,32 +12,43 @@ import (
 // Compiles a passbock pass at the directory specified
 func Compile(path string) error {
 	fmt.Printf("Compiling directory %v\n", path)
-	return createManifest(path)
-}
+	fmt.Println("Packaging files")
 
-//TODO: make it work with nest filesystem structure
-func createManifest(path string) error {
-	content := make(map[string]string)
-
-	infos, err := ioutil.ReadDir(path)
+	targets, err := findTargets(path)
 
 	if err != nil {
 		return err
 	}
 
-	for _, info := range infos {
-		name := info.Name()
-		if !ignoreInManifest(name) {
-			content[name], err = getHashForFile(filepath.Join(path, name))
-			if err != nil {
-				return err
-			}
-		}
+	for _, target := range targets {
+		fmt.Printf("\t%v\n", target)
 	}
 
-	writeManifest(content, path)
+	manifest, err := makeManifest(path, targets)
+
+	if err != nil {
+		return err
+	}
+
+	err = writeManifest(manifest, path)
 
 	return nil
+}
+
+func makeManifest(root string, targets []string) (map[string]string, error) {
+	content := make(map[string]string)
+
+	for _, target := range targets {
+		hash, err := getHashForFile(filepath.Join(root, target))
+		if err != nil {
+			return nil, err
+		}
+		content[target] = hash
+	}
+
+	delete(content, "manifest.json")
+
+	return content, nil
 }
 
 func writeManifest(content map[string]string, root string) error {
@@ -57,28 +67,6 @@ func writeManifest(content map[string]string, root string) error {
 	return nil
 }
 
-/*
-  Currently files that should be ignored in the manifest of a passbook.
-*/
-func ignoreInManifest(name string) bool {
-	config := GetConfig()
-
-	if name == "manifest.json" {
-		return true
-	}
-
-	for _, pattern := range config.IgnorePatterns {
-		if match, err := filepath.Match(pattern, name); err == nil && match {
-			return true
-		}
-	}
-
-	return false
-}
-
-/*
-
-*/
 func getHashForFile(path string) (string, error) {
 	file, err := os.Open(path)
 
