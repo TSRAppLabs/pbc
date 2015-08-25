@@ -61,11 +61,11 @@ func writeManifest(content map[string]string, root string) error {
   Currently files that should be ignored in the manifest of a passbook.
 */
 func ignoreInManifest(name string) bool {
+	config := GetConfig()
+
 	if name == "manifest.json" {
 		return true
 	}
-
-	config := GetConfig()
 
 	for _, pattern := range config.IgnorePatterns {
 		if match, err := filepath.Match(pattern, name); err == nil && match {
