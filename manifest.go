@@ -9,32 +9,6 @@ import (
 	"path/filepath"
 )
 
-// Compiles a passbock pass at the directory specified
-func Compile(path string) error {
-	fmt.Printf("Compiling directory %v\n", path)
-	fmt.Println("Packaging files")
-
-	targets, err := findTargets(path)
-
-	if err != nil {
-		return err
-	}
-
-	for _, target := range targets {
-		fmt.Printf("\t%v\n", target)
-	}
-
-	manifest, err := makeManifest(path, targets)
-
-	if err != nil {
-		return err
-	}
-
-	err = writeManifest(manifest, path)
-
-	return nil
-}
-
 func makeManifest(root string, targets []string) (map[string]string, error) {
 	content := make(map[string]string)
 
@@ -83,4 +57,18 @@ func getHashForFile(path string) (string, error) {
 	}
 
 	return fmt.Sprintf("%x", hasher.Sum(nil)), nil
+}
+
+func addManifest(targets []string) []string {
+	found := false
+	for _, target := range targets {
+		if target == "manifest.json" {
+			found = true
+		}
+	}
+
+	if !found {
+		return append(targets, "maifest.json")
+	}
+	return targets
 }
