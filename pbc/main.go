@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+
 	"stash.tsrapplabs.com/ut/pbc"
 )
 
@@ -47,12 +48,14 @@ func main() {
 	}
 
 	if err != nil {
+		fmt.Println(err)
 		log.Fatal(err)
 	}
 
 	err = pbc.Compile(root, config)
 
 	if err != nil {
+		fmt.Println(err)
 		log.Fatal(err)
 	}
 }

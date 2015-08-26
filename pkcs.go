@@ -1,7 +1,9 @@
 package pbc
 
 import (
+	"os"
 	"os/exec"
+	"strings"
 )
 
 func signPassbook(sign SignConfig) error {
@@ -11,8 +13,14 @@ func signPassbook(sign SignConfig) error {
 		"-inkey", sign.Key,
 		"-in", "manifest.json",
 		"-out", "signature",
-		"-passin", sign.Pass)
-	return cmd.Run()
+		"-passin", strings.Join([]string{"pass", sign.Pass}, ":"))
+
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type SignConfig struct {
