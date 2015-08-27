@@ -24,9 +24,6 @@ func getSignConfig() (pbc.SignConfig, error) {
 		return signConfig, errors.New("Please specify a intermediate Key")
 	}
 
-	if pass == "" {
-		return signConfig, errors.New("Please supply a password")
-	}
 	return pbc.SignConfig{
 		Cert:   cert,
 		Signer: signer,

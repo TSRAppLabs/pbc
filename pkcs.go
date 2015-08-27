@@ -1,20 +1,32 @@
 package pbc
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 func signPassbook(sign SignConfig) error {
-	cmd := exec.Command("openssl", "smime", "-binary", "-sign",
+
+	baseArgs := []string{
+		"smime", "-binary", "-sign",
+		"-in", "manifest.json",
+		"-outform", "DER",
+	}
+
+	args := append(baseArgs, []string{
 		"-certfile", sign.Cert,
 		"-signer", sign.Signer,
 		"-inkey", sign.Key,
-		"-in", "manifest.json",
-		"-out", "signature",
-		"-outform", "DER",
-		"-passin", strings.Join([]string{"pass", sign.Pass}, ":"))
+	}...)
+
+	if sign.Pass != "" {
+		args = append(args, []string{
+			"--passin", fmt.Sprintf("pass:%v", sign.Pass),
+		}...)
+	}
+
+	cmd := exec.Command("openssl", args...)
 
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
