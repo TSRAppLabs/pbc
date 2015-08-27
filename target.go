@@ -15,7 +15,7 @@ func findTargets(root string) ([]string, error) {
 			targets = append(targets, path)
 		}
 
-		if info.IsDir() && !isTarget(path) {
+		if info.IsDir() && !isTarget(path) && path != "." {
 			return filepath.SkipDir
 		}
 		return nil
