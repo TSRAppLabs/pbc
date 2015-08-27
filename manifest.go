@@ -68,7 +68,7 @@ func addManifest(targets []string) []string {
 	}
 
 	if !found {
-		return append(targets, "maifest.json")
+		return append(targets, "manifest.json")
 	}
 	return targets
 }
