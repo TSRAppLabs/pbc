@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"stash.tsrapplabs.com/ut/pbc"
 )
@@ -38,8 +39,6 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println(cert)
-
 	config, err := getSignConfig()
 
 	root := "."
@@ -48,14 +47,21 @@ func main() {
 	}
 
 	if err != nil {
+		fmt.Println(err.Error())
+		log.Fatal(err)
+	}
+
+	file, err := os.Create("vr.pkpass")
+
+	if err != nil {
 		fmt.Println(err)
 		log.Fatal(err)
 	}
 
-	err = pbc.Compile(root, config)
+	err = pbc.Compile(root, config, file)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		log.Fatal(err)
 	}
 }

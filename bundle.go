@@ -8,7 +8,7 @@ import (
 )
 
 // Compiles a passbock pass at the directory specified
-func Compile(path string, sign SignConfig) error {
+func Compile(path string, sign SignConfig, out io.Writer) error {
 	fmt.Printf("Compiling directory %v\n", path)
 	fmt.Println("Packaging files")
 
@@ -28,7 +28,7 @@ func Compile(path string, sign SignConfig) error {
 
 	name := "vr.pkpass"
 
-	return packagePassbook(name, targets)
+	return packagePassbook(name, targets, out)
 }
 
 func gatherTargets(path string) ([]string, error) {
@@ -45,7 +45,7 @@ func gatherTargets(path string) ([]string, error) {
 	return targets, nil
 }
 
-func packagePassbook(name string, targets []string) error {
+func packagePassbook(name string, targets []string, out io.Writer) error {
 	file, err := os.Create(name)
 
 	if err != nil {
