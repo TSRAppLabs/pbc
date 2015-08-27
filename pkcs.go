@@ -13,6 +13,7 @@ func signPassbook(sign SignConfig) error {
 		"-inkey", sign.Key,
 		"-in", "manifest.json",
 		"-out", "signature",
+		"-outform", "DER",
 		"-passin", strings.Join([]string{"pass", sign.Pass}, ":"))
 
 	cmd.Stderr = os.Stderr
