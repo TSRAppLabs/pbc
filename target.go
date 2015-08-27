@@ -33,6 +33,10 @@ func isTarget(file string) bool {
 		name = parts[len(parts)-1]
 	}
 
+	if name == "signature" {
+		return false
+	}
+
 	if match, err := filepath.Match("*.pkpass", name); err == nil && match {
 		return false
 	}
