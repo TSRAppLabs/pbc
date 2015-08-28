@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -11,19 +10,6 @@ import (
 )
 
 func getSignConfig() (pbc.SignConfig, error) {
-	var signConfig pbc.SignConfig
-	if cert == "" {
-		return signConfig, errors.New("Please specify a cert to sign the passbook with")
-	}
-
-	if signer == "" {
-		return signConfig, errors.New("Please specify a signer for the passbook")
-	}
-
-	if key == "" {
-		return signConfig, errors.New("Please specify a intermediate Key")
-	}
-
 	return pbc.SignConfig{
 		Cert:   cert,
 		Signer: signer,
@@ -35,6 +21,11 @@ func getSignConfig() (pbc.SignConfig, error) {
 func main() {
 
 	flag.Parse()
+
+	if help {
+		flag.Usage()
+		return
+	}
 
 	config, err := getSignConfig()
 
@@ -55,7 +46,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = pbc.Compile(root, config, file)
+	compileOptions := pbc.CompileOptions{
+		NoZip:       nozip,
+		NoSignature: nosign,
+	}
+
+	err = pbc.Compile(root, config, compileOptions, file)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -68,9 +64,19 @@ var signer string
 var key string
 var pass string
 
+var nosign bool
+var nozip bool
+
+var help bool
+
 func init() {
 	flag.StringVar(&cert, "cert", "", "Cert with which to sign passbook")
 	flag.StringVar(&signer, "signer", "", "Signing identity")
 	flag.StringVar(&key, "key", "", "Key")
 	flag.StringVar(&pass, "pass", "", "Pass")
+
+	flag.BoolVar(&nosign, "no-sign", false, "Will not sign pass")
+	flag.BoolVar(&nozip, "no-zip", false, "Will not zip")
+
+	flag.BoolVar(&help, "help", false, "Help command")
 }

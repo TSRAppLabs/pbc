@@ -58,17 +58,3 @@ func getHashForFile(path string) (string, error) {
 
 	return fmt.Sprintf("%x", hasher.Sum(nil)), nil
 }
-
-func addManifest(targets []string) []string {
-	found := false
-	for _, target := range targets {
-		if target == "manifest.json" {
-			found = true
-		}
-	}
-
-	if !found {
-		return append(targets, "manifest.json")
-	}
-	return targets
-}
