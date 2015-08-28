@@ -1,49 +1,68 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/spf13/cobra"
 	"stash.tsrapplabs.com/ut/pbc"
 )
 
-func getSignConfig() (pbc.SignConfig, error) {
-	return pbc.SignConfig{
-		Cert:   cert,
-		Signer: signer,
-		Key:    key,
-		Pass:   pass,
-	}, nil
+func main() {
+	rootCmd.Execute()
 }
 
-func main() {
+var cert string
+var signer string
+var key string
+var pass string
 
-	flag.Parse()
+var nosign bool
+var nozip bool
 
-	if help {
-		flag.Usage()
-		return
+var help bool
+
+var rootCmd *cobra.Command
+
+func init() {
+	rootCmd = &cobra.Command{
+		Use: "pbc",
 	}
 
-	config, err := getSignConfig()
+	buildCmd := &cobra.Command{
+		Use:   "build",
+		Short: "builds a pkpass",
+		Long:  "builds a pkpass",
+		Run:   buildCommandRun,
+	}
+
+	buildCmd.Flags().StringVarP(&cert, "cert", "c", "", "Certificate to sign")
+	buildCmd.Flags().StringVarP(&signer, "signer", "s", "", "Certificate signing the certificate")
+	buildCmd.Flags().StringVarP(&key, "key", "k", "", "Key")
+	buildCmd.Flags().StringVarP(&pass, "pass", "p", "", "Password for certificate")
+
+	rootCmd.AddCommand(buildCmd)
+}
+
+func buildCommandRun(cmd *cobra.Command, args []string) {
+
+	fmt.Println(args)
 
 	root := "."
-	if len(flag.Args()) > 1 {
-		root = flag.Args()[1]
-	}
-
-	if err != nil {
-		fmt.Println(err.Error())
-		log.Fatal(err)
-	}
 
 	file, err := os.Create("vr.pkpass")
 
 	if err != nil {
 		fmt.Println(err)
 		log.Fatal(err)
+	}
+
+	config := pbc.SignConfig{
+		Cert:   cert,
+		Signer: signer,
+		Key:    key,
+		Pass:   pass,
 	}
 
 	compileOptions := pbc.CompileOptions{
@@ -57,26 +76,4 @@ func main() {
 		fmt.Println(err.Error())
 		log.Fatal(err)
 	}
-}
-
-var cert string
-var signer string
-var key string
-var pass string
-
-var nosign bool
-var nozip bool
-
-var help bool
-
-func init() {
-	flag.StringVar(&cert, "cert", "", "Cert with which to sign passbook")
-	flag.StringVar(&signer, "signer", "", "Signing identity")
-	flag.StringVar(&key, "key", "", "Key")
-	flag.StringVar(&pass, "pass", "", "Pass")
-
-	flag.BoolVar(&nosign, "no-sign", false, "Will not sign pass")
-	flag.BoolVar(&nozip, "no-zip", false, "Will not zip")
-
-	flag.BoolVar(&help, "help", false, "Help command")
 }
