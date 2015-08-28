@@ -7,13 +7,8 @@ import (
 	"os"
 )
 
-type CompileOptions struct {
-	NoZip       bool
-	NoSignature bool
-}
-
 // Compiles a passbock pass at the directory specified
-func Compile(path string, sign SignConfig, options CompileOptions, out io.Writer) error {
+func Compile(path string, sign SignConfig, out io.Writer) error {
 	fmt.Printf("Compiling directory %v\n", path)
 	fmt.Println("Packaging files")
 

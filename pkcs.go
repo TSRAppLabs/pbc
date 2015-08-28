@@ -45,6 +45,21 @@ func signPassbook(sign SignConfig) error {
 	return nil
 }
 
+func createCertKey(p12path, cert, key string) error {
+	mkCert := exec.Command("openssl", "pkcs12", "-in", p12path, "-clcerts", "-nokeys", "-out", cert)
+	if err := mkCert.Run(); err != nil {
+		return err
+	}
+
+	mkKey := exec.Command("openssl", "pkcs12", "-in", p12path, "-nocerts", "-out", key)
+
+	if err := mkKey.Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type SignConfig struct {
 	Cert   string
 	Signer string

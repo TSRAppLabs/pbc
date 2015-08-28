@@ -10,6 +10,7 @@ import (
 
 type PBCConfig struct {
 	IgnorePatterns []string
+	DataDir        string `json:"datadir"`
 }
 
 var cacheConfig PBCConfig
@@ -33,8 +34,10 @@ func obtainConfig() PBCConfig {
 
 	if err != nil {
 		fmt.Printf("Failing to get config %v", err)
-		config = defaultConfig()
+		config = defaultConfig
 	}
+
+	config = reconcileConfig(config)
 
 	return config
 }
@@ -55,15 +58,29 @@ func configFromFile(path string) (PBCConfig, error) {
 	err = json.NewDecoder(file).Decode(&config)
 	if err != nil {
 		return config, err
-	} else {
-		fmt.Printf("Using config file: %v\n", path)
 	}
 
 	return config, err
 }
 
-func defaultConfig() PBCConfig {
-	return PBCConfig{
-		IgnorePatterns: []string{},
+var _data_dir string
+
+func getDataDir() string {
+	if _data_dir == "" {
+		_data_dir = ExpandPath(replaceTilde(GetConfig().DataDir))
 	}
+	return _data_dir
+}
+
+func reconcileConfig(config PBCConfig) PBCConfig {
+	if config.DataDir == "" {
+		config.DataDir = defaultConfig.DataDir
+	}
+
+	return config
+}
+
+var defaultConfig = PBCConfig{
+	IgnorePatterns: []string{},
+	DataDir:        "~/pbc/",
 }
