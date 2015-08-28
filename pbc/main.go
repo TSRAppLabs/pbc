@@ -17,6 +17,7 @@ var cert string
 var signer string
 var key string
 var pass string
+var passname string
 
 var nosign bool
 var nozip bool
@@ -41,6 +42,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&signer, "signer", "s", "", "Certificate signing the certificate")
 	buildCmd.Flags().StringVarP(&key, "key", "k", "", "Key")
 	buildCmd.Flags().StringVarP(&pass, "pass", "p", "", "Password for certificate")
+	buildCmd.Flags().StringVarP(&passname, "name", "n", "pass.pkpass", "Resulting passbook file")
 
 	rootCmd.AddCommand(buildCmd)
 }
@@ -51,7 +53,7 @@ func buildCommandRun(cmd *cobra.Command, args []string) {
 
 	root := "."
 
-	file, err := os.Create("vr.pkpass")
+	file, err := os.Create(passname)
 
 	if err != nil {
 		fmt.Println(err)
