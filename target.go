@@ -11,6 +11,10 @@ import (
 func findTargets(root string) ([]string, error) {
 	var targets []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+
 		if isTarget(path) && !info.IsDir() {
 			targets = append(targets, path)
 		}

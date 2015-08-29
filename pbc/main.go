@@ -33,19 +33,24 @@ func init() {
 }
 
 func mkBuildCommand() *cobra.Command {
-	var cert string
-	var signer string
-	var key string
-	var pass string
+	var profilename string
 
 	buildCmd := &cobra.Command{
 		Use:   "build",
 		Short: "builds a pkpass",
 		Long:  "builds a pkpass",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println(args)
-
 			root := "."
+			if len(args) > 0 {
+				root = args[0]
+			}
+
+			profile, err := pbc.GetProfile(profilename)
+
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v", err.Error())
+				return
+			}
 
 			file, err := os.Create(passname)
 
@@ -54,26 +59,17 @@ func mkBuildCommand() *cobra.Command {
 				log.Fatal(err)
 			}
 
-			config := pbc.SignConfig{
-				Cert:   cert,
-				Signer: signer,
-				Key:    key,
-				Pass:   pass,
-			}
-
-			err = pbc.Compile(root, config, file)
+			err = pbc.Compile(root, profile, file)
 
 			if err != nil {
 				fmt.Println(err.Error())
 				log.Fatal(err)
+
 			}
 		},
 	}
 
-	buildCmd.Flags().StringVarP(&cert, "cert", "c", "", "Certificate to sign")
-	buildCmd.Flags().StringVarP(&signer, "signer", "s", "", "Certificate signing the certificate")
-	buildCmd.Flags().StringVarP(&key, "key", "k", "", "Key")
-	buildCmd.Flags().StringVarP(&pass, "pass", "p", "", "Password for certificate")
+	buildCmd.Flags().StringVarP(&profilename, "profile", "p", "", "Profile to use")
 	buildCmd.Flags().StringVarP(&passname, "name", "n", "pass.pkpass", "Resulting passbook file")
 
 	return buildCmd
