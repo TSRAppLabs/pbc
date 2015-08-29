@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
-	"path/filepath"
 )
 
 func makeManifest(root string, targets []string) (map[string]string, error) {
 	content := make(map[string]string)
 
 	for _, target := range targets {
-		hash, err := getHashForFile(filepath.Join(root, target))
+		hash, err := getHashForFile(target)
 		if err != nil {
 			return nil, err
 		}
@@ -25,20 +25,20 @@ func makeManifest(root string, targets []string) (map[string]string, error) {
 	return content, nil
 }
 
-func writeManifest(content map[string]string, root string) error {
-	file, err := os.Create(filepath.Join(root, "manifest.json"))
+func writeManifest(content map[string]string, root string) (string, error) {
+	file, err := ioutil.TempFile("", "manifest")
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	defer file.Close()
 
 	err = json.NewEncoder(file).Encode(content)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return file.Name(), nil
 }
 
 func getHashForFile(path string) (string, error) {

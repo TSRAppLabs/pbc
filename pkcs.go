@@ -6,12 +6,12 @@ import (
 	"os/exec"
 )
 
-func signPassbook(sign SignConfig) error {
+func signPassbook(sign SignConfig, manifestPath, signaturePath string) error {
 
 	args := []string{
 		"smime", "-binary", "-sign",
-		"-in", "manifest.json",
-		"-out", "signature",
+		"-in", manifestPath,
+		"-out", signaturePath,
 		"-outform", "DER",
 	}
 
@@ -35,10 +35,23 @@ func signPassbook(sign SignConfig) error {
 
 	cmd := exec.Command("openssl", args...)
 
-	fmt.Printf("command for signing: %v\n", cmd.Args)
-
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createCertKey(p12path, cert, key string) error {
+	mkCert := exec.Command("openssl", "pkcs12", "-in", p12path, "-clcerts", "-nokeys", "-out", cert)
+	if err := mkCert.Run(); err != nil {
+		return err
+	}
+
+	mkKey := exec.Command("openssl", "pkcs12", "-in", p12path, "-nocerts", "-out", key)
+
+	if err := mkKey.Run(); err != nil {
 		return err
 	}
 

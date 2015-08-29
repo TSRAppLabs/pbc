@@ -4,16 +4,14 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
-type CompileOptions struct {
-	NoZip       bool
-	NoSignature bool
-}
-
 // Compiles a passbock pass at the directory specified
-func Compile(path string, sign SignConfig, options CompileOptions, out io.Writer) error {
+func Compile(path string, profile Profile, out io.Writer) error {
 	fmt.Printf("Compiling directory %v\n", path)
 	fmt.Println("Packaging files")
 
@@ -24,16 +22,28 @@ func Compile(path string, sign SignConfig, options CompileOptions, out io.Writer
 		return err
 	}
 
-	err = writeManifest(manifest, path)
-	targets = addSet(addSet(targets, "manifest.json"), "signature")
+	manifestPath, err := writeManifest(manifest, path)
 
-	if err = signPassbook(sign); err != nil {
+	sign := SignConfig{
+		Cert:   filepath.Join(filepath.Join(getDataDir(), "wwdr.pem")),
+		Key:    profile.getKeyPath(),
+		Signer: profile.getCertPath(),
+		Pass:   "",
+	}
+
+	signFile, err := ioutil.TempFile("", "signature")
+
+	if err != nil {
 		return err
 	}
 
-	name := "vr.pkpass"
+	signFile.Close()
 
-	return packagePassbook(name, targets, out)
+	if err = signPassbook(sign, manifestPath, signFile.Name()); err != nil {
+		return err
+	}
+
+	return packagePassbook(path, targets, manifestPath, signFile.Name(), out)
 }
 
 func gatherTargets(path string) ([]string, error) {
@@ -50,18 +60,12 @@ func gatherTargets(path string) ([]string, error) {
 	return targets, nil
 }
 
-func packagePassbook(name string, targets []string, out io.Writer) error {
-	file, err := os.Create(name)
-
-	if err != nil {
-		return err
-	}
-
-	passbook := zip.NewWriter(file)
+func packagePassbook(root string, targets []string, manifestPath, sigPath string, out io.Writer) error {
+	passbook := zip.NewWriter(out)
 	defer passbook.Close()
 
 	for _, target := range targets {
-		fout, err := passbook.Create(target)
+		fout, err := passbook.Create(clean(target, root))
 		if err != nil {
 			return err
 		}
@@ -69,6 +73,16 @@ func packagePassbook(name string, targets []string, out io.Writer) error {
 		if err := writeIn(fout, target); err != nil {
 			return err
 		}
+	}
+
+	manOut, err := passbook.Create("manifest.json")
+	if err != nil {
+		writeIn(manOut, manifestPath)
+	}
+
+	sigOut, err := passbook.Create("signature")
+	if err != nil {
+		writeIn(sigOut, sigPath)
 	}
 
 	return nil
@@ -85,4 +99,21 @@ func writeIn(fout io.Writer, target string) error {
 
 	io.Copy(fout, fin)
 	return nil
+}
+
+func clean(target, root string) string {
+	targetParts := strings.Split(target, string(filepath.Separator))
+	rootParts := strings.Split(root, string(filepath.Separator))
+
+	return filepath.Join(stripRoot(targetParts, rootParts)...)
+}
+
+func stripRoot(targetParts, rootParts []string) []string {
+	i := 0
+
+	for i < len(targetParts) && i < len(rootParts) && targetParts[i] == rootParts[i] {
+		i++
+	}
+
+	return targetParts[i:]
 }
