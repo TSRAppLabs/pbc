@@ -48,7 +48,7 @@ func mkBuildCommand() *cobra.Command {
 			profile, err := pbc.GetProfile(profilename)
 
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v", err.Error())
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err.Error())
 				return
 			}
 
@@ -102,7 +102,7 @@ func mkProfileCommand() *cobra.Command {
 		Short: "adds a profile",
 		Run:   addProfile,
 	}
-	profAddCmd.Flags().StringVarP(&name, "profile-name", "p", "", "Name to give the profile")
+	profAddCmd.Flags().StringVarP(&name, "profile", "p", "", "Name to give the profile")
 	profAddCmd.Flags().StringVarP(&p12path, "cert", "c", "", "Cert to create profile with")
 
 	profLsCmd := &cobra.Command{
