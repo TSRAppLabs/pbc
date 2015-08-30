@@ -76,12 +76,12 @@ func packagePassbook(root string, targets []string, manifestPath, sigPath string
 	}
 
 	manOut, err := passbook.Create("manifest.json")
-	if err != nil {
+	if err == nil {
 		writeIn(manOut, manifestPath)
 	}
 
 	sigOut, err := passbook.Create("signature")
-	if err != nil {
+	if err == nil {
 		writeIn(sigOut, sigPath)
 	}
 
