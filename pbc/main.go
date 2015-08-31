@@ -30,6 +30,7 @@ func init() {
 
 	rootCmd.AddCommand(mkBuildCommand())
 	rootCmd.AddCommand(mkProfileCommand())
+	rootCmd.AddCommand(mkLintCommand())
 }
 
 func mkBuildCommand() *cobra.Command {
@@ -134,4 +135,33 @@ func mkProfileCommand() *cobra.Command {
 	profCmd.AddCommand(profRmCmd)
 
 	return profCmd
+}
+
+func mkLintCommand() *cobra.Command {
+	lintCmd := &cobra.Command{
+		Use:   "lint",
+		Short: "checks a pass for mistakes",
+		Long:  "checks a pass for mistakes",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Linting . . . . ")
+			dir := "."
+			if len(args) > 0 {
+				dir = args[0]
+			}
+
+			warn, err := pbc.LintPass(dir)
+
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+
+			for _, msg := range warn {
+				fmt.Println(msg)
+			}
+
+		},
+	}
+
+	return lintCmd
 }
