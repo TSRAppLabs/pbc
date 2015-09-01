@@ -24,7 +24,16 @@ func LintPass(path string) (Warning, error) {
 		return []string{}, err
 	}
 
-	return CheckPass(content), nil
+	warn := CheckPass(content)
+
+	image_warn, err := LintImages(path)
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	return append(warn, image_warn...), nil
+
 }
 
 func CheckPass(payload interface{}) Warning {
