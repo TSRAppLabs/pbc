@@ -91,7 +91,7 @@ var numberStyle = enum("PKNumberStyle", "Decimal", "Percent", "Scientific", "Spe
 
 //Types
 var (
-	beaconType = And(Required("proximityUUID"), Object(map[string]TypeCheck{
+	beaconType = And(Required("proximityUUID"), WhiteList("major", "minor", "proximityUUID", "relevantText"), Object(map[string]TypeCheck{
 		"major":         isU16,
 		"minor":         isU16,
 		"proximityUUID": IsString,
@@ -118,30 +118,32 @@ var (
 		"label":             IsString,
 		"textAlignment":     StringEnum(textAlignments...),
 		"value":             Either(IsString, isDate, IsNumber, IsDouble),
-	}))
+	}), WhiteList("dateStyle", "ignoresTimeZone", "isRelative", "timeStyle", "currencyCode", "numberStyle", "attributedValue", "changeMessage", "dataDetectorTypes", "key", "label", "textAlignment", "value"))
 
-	passStructureType = Object(map[string]TypeCheck{
+	passStructureType = And(Object(map[string]TypeCheck{
 		"auxiliaryFields": ArrayOf(fieldType),
 		"backFields":      ArrayOf(fieldType),
 		"headerFields":    ArrayOf(fieldType),
 		"primaryFields":   ArrayOf(fieldType),
 		"secondaryFields": ArrayOf(fieldType),
 		//transitType (required for boarding passes), is outside of our purposes for this program currently
-	})
+	}), WhiteList("auxiliaryFields", "backFields", "headerFields", "primaryFields", "secondaryFields", "transitType"))
 
 	locationType = And(Object(map[string]TypeCheck{
 		"altitude":     IsDouble,
-		"latitiude":    IsDouble,
+		"latitude":     IsDouble,
 		"longitude":    IsDouble,
 		"relevantText": IsString,
-	}), Required("latitude", "longitude"))
+	}), Required("latitude", "longitude"),
+		WhiteList("altitude", "latitude", "longitude", "relevantText"))
 
 	barcodeType = And(Object(map[string]TypeCheck{
 		"altText":         IsString,
 		"format":          StringEnum(encodings...),
 		"message":         IsString,
 		"messageEncoding": IsString,
-	}), Required("format", "message", "messageEncoding"))
+	}), Required("format", "message", "messageEncoding"),
+		WhiteList("altText", "format", "message", "messageEncoding"))
 )
 
 func init() {
@@ -185,13 +187,13 @@ func init() {
 	}))
 
 	visualKeyTypes := Object(map[string]TypeCheck{
-		"backcode":           barcodeType,
+		"barcode":            barcodeType,
 		"backgroundColor":    isColor,
 		"foregroundColor":    isColor,
 		"groupingIdentifier": IsString,
 		"labelColor":         isColor,
 		"logoText":           IsString,
-		"suppressStripSHine": IsBool,
+		"suppressStripShine": IsBool,
 	})
 
 	webServiceKeys := Object(map[string]TypeCheck{
@@ -199,5 +201,13 @@ func init() {
 		"webServiceURL":       IsString,
 	})
 
-	checkPass = And(requiredBaseKeys, requiredBaseKeyTypes, assocAppKeyTypes, companionAppKeyTypes, expirationKeyTypes, relevanceKeyTypes, styleType, visualKeyTypes, webServiceKeys)
+	baseList := WhiteList("description", "formatVersion", "organizationName", "passTypeIdentifier", "serialNumber", "teamIdentifier",
+		"appLaunchURL", "associatedStoreIdentifiers",
+		"userInfo",
+		"expriationDate", "voided",
+		"beacons", "locations", "maxDistance", "relevantDate",
+		"boardingPass", "coupon", "eventTicket", "generic", "storeCard",
+		"barcode", "backgroundColor", "foregroundColor", "groupingIdentifier", "labelColor", "logoText", "suppressStripShine",
+		"authenticationToken", "webServiceURL")
+	checkPass = And(requiredBaseKeys, requiredBaseKeyTypes, assocAppKeyTypes, companionAppKeyTypes, expirationKeyTypes, relevanceKeyTypes, styleType, visualKeyTypes, webServiceKeys, baseList)
 }
