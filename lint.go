@@ -172,8 +172,8 @@ func init() {
 	})
 
 	relevanceKeyTypes := Object(map[string]TypeCheck{
-		"beacons":      beaconType,
-		"locations":    locationType,
+		"beacons":      ArrayOf(beaconType),
+		"locations":    ArrayOf(locationType),
 		"maxDistance":  IsNumber,
 		"relevantDate": isDate,
 	})
