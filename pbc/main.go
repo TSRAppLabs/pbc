@@ -6,20 +6,18 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"stash.tsrapplabs.com/ut/pbc"
 )
 
 func main() {
 	pbc.InitDataDir()
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error while reading config: %v", err)
+	}
+
 	rootCmd.Execute()
 }
-
-var passname string
-
-var nosign bool
-var nozip bool
-
-var help bool
 
 var rootCmd *cobra.Command
 
@@ -28,13 +26,19 @@ func init() {
 		Use: "pbc",
 	}
 
+	viper.SetConfigName("config")
+	viper.AddConfigPath(os.ExpandEnv("${HOME}/.pbc"))
+
+	viper.SetDefault("core.datadir", "${HOME}/.pbc")
+
 	rootCmd.AddCommand(mkBuildCommand())
 	rootCmd.AddCommand(mkProfileCommand())
 	rootCmd.AddCommand(mkLintCommand())
 }
 
 func mkBuildCommand() *cobra.Command {
-	var profilename string
+	var profile string
+	var name string
 
 	buildCmd := &cobra.Command{
 		Use:   "build",
@@ -45,34 +49,41 @@ func mkBuildCommand() *cobra.Command {
 			if len(args) > 0 {
 				root = args[0]
 			}
+			if profile != "" {
+				viper.SetDefault("build.profile", profile)
+			}
 
-			profile, err := pbc.GetProfile(profilename)
+			if name != "" {
+				viper.SetDefault("build.name", name)
+			}
+
+			profile, err := pbc.GetProfile(viper.GetString("build.profile"))
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err.Error())
 				return
 			}
 
-			file, err := os.Create(passname)
+			file, err := os.Create(viper.GetString("build.name"))
 
 			if err != nil {
-				fmt.Println(err)
-				log.Fatal(err)
+
+				fmt.Printf("Trying to create file: %v, %v", viper.GetString("build.name"), err)
+				os.Exit(1)
 			}
 
 			err = pbc.Compile(root, profile, file)
 
 			if err != nil {
 				fmt.Println(err.Error())
-				log.Fatal(err)
+				os.Exit(1)
 
 			}
 		},
 	}
-
-	buildCmd.Flags().StringVarP(&profilename, "profile", "p", "", "Profile to use")
-	buildCmd.Flags().StringVarP(&passname, "name", "n", "pass.pkpass", "Resulting passbook file")
-
+	buildCmd.Flags().StringVarP(&profile, "profile", "p", "", "Profile to use")
+	buildCmd.Flags().StringVarP(&name, "name", "n", "", "Resulting passbook file")
+	viper.SetDefault("build.name", "pass.pkpass")
 	return buildCmd
 }
 

@@ -1,6 +1,7 @@
 package pbc
 
 import (
+	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
 )
@@ -29,8 +30,6 @@ func findTargets(root string) ([]string, error) {
 }
 
 func isTarget(file string) bool {
-	config := GetConfig()
-
 	name := ""
 	parts := filepath.SplitList(file)
 	if len(parts) > 0 {
@@ -45,7 +44,7 @@ func isTarget(file string) bool {
 		return false
 	}
 
-	for _, pattern := range config.IgnorePatterns {
+	for _, pattern := range viper.GetStringSlice("core.ignorepatterns") {
 		if match, err := filepath.Match(pattern, name); err == nil && match {
 			return false
 		}
