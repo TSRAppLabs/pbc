@@ -154,7 +154,6 @@ func mkLintCommand() *cobra.Command {
 		Short: "checks a pass for mistakes",
 		Long:  "checks a pass for mistakes",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Linting . . . . ")
 			dir := "."
 			if len(args) > 0 {
 				dir = args[0]
