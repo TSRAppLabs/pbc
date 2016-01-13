@@ -28,6 +28,7 @@ func init() {
 
 	viper.SetConfigName("config")
 	viper.AddConfigPath(os.ExpandEnv("${HOME}/.pbc"))
+	viper.AddConfigPath("/etc/pbc")
 
 	viper.SetDefault("core.datadir", "${HOME}/.pbc")
 

@@ -8,3 +8,7 @@ import (
 func getDataDir() string {
 	return os.ExpandEnv(viper.GetString("core.datadir"))
 }
+
+func init() {
+	viper.SetDefault("core.datadir", os.ExpandEnv("${HOME}/.pbc"))
+}
