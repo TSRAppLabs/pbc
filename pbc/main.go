@@ -6,15 +6,11 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"stash.tsrapplabs.com/ut/pbc"
 )
 
 func main() {
 	pbc.InitDataDir()
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error while reading config: %v", err)
-	}
 
 	rootCmd.Execute()
 }
@@ -26,19 +22,13 @@ func init() {
 		Use: "pbc",
 	}
 
-	viper.SetConfigName("config")
-	viper.AddConfigPath(os.ExpandEnv("${HOME}/.pbc"))
-	viper.AddConfigPath("/etc/pbc")
-
-	viper.SetDefault("core.datadir", "${HOME}/.pbc")
-
 	rootCmd.AddCommand(mkBuildCommand())
 	rootCmd.AddCommand(mkProfileCommand())
 	rootCmd.AddCommand(mkLintCommand())
 }
 
 func mkBuildCommand() *cobra.Command {
-	var profile string
+	var profileName string
 	var name string
 
 	buildCmd := &cobra.Command{
@@ -50,26 +40,26 @@ func mkBuildCommand() *cobra.Command {
 			if len(args) > 0 {
 				root = args[0]
 			}
-			if profile != "" {
-				viper.SetDefault("build.profile", profile)
+			if profileName != "" {
+				log.Fatal("Unable to compile without profile\n")
 			}
 
 			if name != "" {
-				viper.SetDefault("build.name", name)
+				name = "pass.pkpass"
 			}
 
-			profile, err := pbc.GetProfile(viper.GetString("build.profile"))
+			profile, err := pbc.GetProfile(profileName)
 
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err.Error())
 				return
 			}
 
-			file, err := os.Create(viper.GetString("build.name"))
+			file, err := os.Create(name)
 
 			if err != nil {
 
-				fmt.Printf("Trying to create file: %v, %v", viper.GetString("build.name"), err)
+				fmt.Printf("Trying to create file: %v, %v", name, err)
 				os.Exit(1)
 			}
 
@@ -82,9 +72,8 @@ func mkBuildCommand() *cobra.Command {
 			}
 		},
 	}
-	buildCmd.Flags().StringVarP(&profile, "profile", "p", "", "Profile to use")
+	buildCmd.Flags().StringVarP(&profileName, "profile", "p", "", "Profile to use")
 	buildCmd.Flags().StringVarP(&name, "name", "n", "", "Resulting passbook file")
-	viper.SetDefault("build.name", "pass.pkpass")
 	return buildCmd
 }
 
