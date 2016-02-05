@@ -40,11 +40,11 @@ func mkBuildCommand() *cobra.Command {
 			if len(args) > 0 {
 				root = args[0]
 			}
-			if profileName != "" {
+			if profileName == "" {
 				log.Fatal("Unable to compile without profile\n")
 			}
 
-			if name != "" {
+			if name == "" {
 				name = "pass.pkpass"
 			}
 
