@@ -17,7 +17,7 @@ func makeManifest(root string, targets []string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		content[target] = hash
+		content[clean(target, root)] = hash
 	}
 
 	delete(content, "manifest.json")
