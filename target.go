@@ -1,7 +1,6 @@
 package pbc
 
 import (
-	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
 )
@@ -42,12 +41,6 @@ func isTarget(file string) bool {
 
 	if match, err := filepath.Match("*.pkpass", name); err == nil && match {
 		return false
-	}
-
-	for _, pattern := range viper.GetStringSlice("core.ignorepatterns") {
-		if match, err := filepath.Match(pattern, name); err == nil && match {
-			return false
-		}
 	}
 
 	return true
