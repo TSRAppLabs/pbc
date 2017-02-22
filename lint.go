@@ -2,10 +2,10 @@ package pbc
 
 import (
 	"encoding/json"
+	. "github.com/tsrapplabs/jsonlint"
 	"os"
 	"path/filepath"
 	"regexp"
-	. "stash.tsrapplabs.com/ut/jsonlint"
 )
 
 var checkPass TypeCheck

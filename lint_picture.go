@@ -1,9 +1,9 @@
 package pbc
 
 import (
+	. "github.com/tsrapplabs/jsonlint"
 	"image/png"
 	"os"
-	. "stash.tsrapplabs.com/ut/jsonlint"
 )
 
 var imageRoots = []string{
