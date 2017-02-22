@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/TSRAppLabs/pbc.git"
+
 	"github.com/spf13/cobra"
-	"stash.tsrapplabs.com/ut/pbc"
 )
 
 func main() {
