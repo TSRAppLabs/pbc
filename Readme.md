@@ -1,2 +1,0 @@
-# pbc
-The Passbook Compiler
